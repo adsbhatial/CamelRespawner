@@ -1,0 +1,18 @@
+# DO NOT CHANGE VERSION
+version: 1.0.0
+# Set to true before sending a log about an issue.
+# Logs trace data required to pinpoint where errors are.
+debug: false
+console:
+  # Should NEG use it's full name or NEG in console messages?
+  longpluginname: true
+# Chance of converting natural cats in desert village to camels
+cat_to_camel_chance: 0.75
+#Config for camel spawn mechanics of the plugin
+camels:
+  # Whether to check nearby camels in the village or not
+  check_camels: true
+  # Maximum camels which can exist nearby
+  max_camels_nearby: 1
+  # Radius for search of nearby camels
+  search_radius: 20
