@@ -1,0 +1,6 @@
+name: CamelRespawner
+version: '${project.version}'
+main: com.adsbhatial.camelrespawner.CamelRespawner
+api-version: '1.20'
+authors: [adsbhatial]
+description: Allows camels to spawn in desert villages
