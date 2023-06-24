@@ -1,2 +1,4 @@
-package com.adsbhatial.camelrespawner.Listeners;public class SpawnListeners {
+package com.adsbhatial.camelrespawner.Listeners;
+
+public class SpawnListeners {
 }
