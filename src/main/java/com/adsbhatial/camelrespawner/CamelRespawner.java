@@ -1,5 +1,7 @@
 package com.adsbhatial.camelrespawner;
 
+import com.adsbhatial.camelrespawner.Commands.CommandHandler;
+import com.adsbhatial.camelrespawner.Commands.CommandOnTabComplete;
 import com.adsbhatial.camelrespawner.Listeners.SpawnListeners;
 import com.adsbhatial.camelrespawner.util.LegacyColors;
 import com.adsbhatial.camelrespawner.util.MessageUtil;
@@ -9,12 +11,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.ChatColor;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,16 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.nio.file.StandardCopyOption;
-import java.security.CodeSource;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static org.spigotmc.SpigotConfig.config;
@@ -48,16 +38,18 @@ public final class CamelRespawner extends JavaPlugin {
     public static boolean debug;
     private BukkitAudiences adventure;
 
-    YamlConfiguration oldconfig = new YamlConfiguration();
+    YamlConfiguration oldConfig = new YamlConfiguration();
+    public YamlConfiguration messages = new YamlConfiguration();
     String configVersion = "1.0.0";
     String pluginName = THIS_NAME;
     @Override
     public void onEnable() {
         // Plugin startup logic
         long startTime = System.currentTimeMillis();
-        System.out.println("CamelRespawner Started");
-        loadConfig();
+        loadConfigs();
         getServer().getPluginManager().registerEvents(new SpawnListeners(this), this);
+        getCommand("camelrespawner").setExecutor(new CommandHandler(this));
+        getCommand("camelrespawner").setTabCompleter(new CommandOnTabComplete());
         this.adventure = BukkitAudiences.create(this);
         consoleInfo("ENABLED - Loading took " + LoadTime(startTime));
     }
@@ -73,15 +65,43 @@ public final class CamelRespawner extends JavaPlugin {
         }
     }
 
-    public @NonNull BukkitAudiences adventure() {
+    public @NotNull BukkitAudiences adventure() {
         if(this.adventure == null) {
             throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
         }
         return this.adventure;
     }
+
+    public void loadConfigs(){
+        this.loadConfig();
+        this.loadMessages();
+    }
+
+    public void loadMessages(){
+        messages = new YamlConfiguration();
+        try{
+            if(!this.getDataFolder().exists()){
+                this.getDataFolder().mkdirs();
+            }
+            File file = new File(this.getDataFolder(), "messages.yml");
+            //this.getLogger().info("" + file);
+            if(!file.exists()){
+                saveResource("messages.yml", true);
+            }
+        }catch(Exception exp){
+            debug = true;
+            exp.printStackTrace();
+        }
+
+        try {
+            messages.load(new File(getDataFolder(), "messages.yml"));
+        } catch (IOException | InvalidConfigurationException e1) {
+            e1.printStackTrace();
+        }
+    }
     public void loadConfig(){
         debug = getConfig().getBoolean("debug", false);
-        oldconfig = new YamlConfiguration();
+        oldConfig = new YamlConfiguration();
         THIS_NAME = this.getDescription().getName();
         THIS_VERSION = this.getDescription().getVersion();
         if(!getConfig().getBoolean("console.longpluginname", true)) {
@@ -105,54 +125,60 @@ public final class CamelRespawner extends JavaPlugin {
         }
 
         try {
-            oldconfig.load(new File(getDataFolder(), "config.yml"));
+            oldConfig.load(new File(getDataFolder(), "config.yml"));
         } catch (IOException | InvalidConfigurationException e1) {
             e1.printStackTrace();
         }
 
-        String checkConfigVersion = oldconfig.getString("version", "1.0.0");
-        System.out.println("config version" + checkConfigVersion);
-        if(checkConfigVersion != null) {
-            if (!checkConfigVersion.equalsIgnoreCase(configVersion)) {
-                try {
-                    Path fileFrom = Paths.get(getDataFolder() + "" + File.separatorChar + "config.yml");
-                    Path fileTo = Paths.get(getDataFolder() + "" + File.separatorChar + "old_config.yml");
-                    CopyOption[] options = new CopyOption[]{
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.COPY_ATTRIBUTES
-                    };
-                    Files.copy(fileFrom, fileTo,options);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                saveResource("config.yml", true);
+        String checkConfigVersion = oldConfig.getString("version", "1.0.0");
+        if (!checkConfigVersion.equalsIgnoreCase(configVersion)) {
+            try {
+                Path fileFrom = Paths.get(getDataFolder().getPath() + File.separatorChar + "config.yml");
+                Path fileTo = Paths.get(getDataFolder().getPath() + File.separatorChar + "old_config.yml");
+                CopyOption[] options = new CopyOption[]{
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.COPY_ATTRIBUTES
+                };
+                Files.copy(fileFrom, fileTo,options);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            saveResource("config.yml", true);
 
-                try {
-                    config.load(new File(getDataFolder(), "config.yml"));
-                } catch (IOException | InvalidConfigurationException e1) {
-                    //logWarn("Could not load config.yml");
-                    e1.printStackTrace();
-                }
-                try {
-                    oldconfig.load(new File(getDataFolder(), "old_config.yml"));
-                } catch (IOException | InvalidConfigurationException e1) {
-                    e1.printStackTrace();
-                }
-                config.set("debug", oldconfig.get("debug", false));
-                config.set("version", oldconfig.get("version", "1.0.0"));
-                config.set("cat_to_camel_chance", oldconfig.get("cat_to_camel_chance", 0.75));
-                config.set("camels.check_camels", oldconfig.get("camels.check_camels", true));
-                config.set("camels.max_camels_nearby", oldconfig.get("camels.check_camels", 1));
-                config.set("camels.search_radius", oldconfig.get("camels.search_radius", 20));
-                try {
-                    config.save(new File(getDataFolder(), "config.yml"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                config.load(new File(getDataFolder(), "config.yml"));
+            } catch (IOException | InvalidConfigurationException e1) {
+                //logWarn("Could not load config.yml");
+                e1.printStackTrace();
+            }
+            try {
+                oldConfig.load(new File(getDataFolder(), "old_config.yml"));
+            } catch (IOException | InvalidConfigurationException e1) {
+                e1.printStackTrace();
+            }
+            config.set("debug", oldConfig.get("debug", false));
+            config.set("version", oldConfig.get("version", "1.0.0"));
+            config.set("cat_to_camel_chance", oldConfig.get("cat_to_camel_chance", 0.75));
+            config.set("camels.check_camels", oldConfig.get("camels.check_camels", true));
+            config.set("camels.max_camels_nearby", oldConfig.get("camels.check_camels", 1));
+            config.set("camels.search_radius", oldConfig.get("camels.search_radius", 20));
+            try {
+                config.save(new File(getDataFolder(), "config.yml"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
 
+    @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        this.loadMessages();
+        saveDefaultConfig();
+        config = (YamlConfiguration) getConfig();
+        config.options().copyDefaults(true);
+        saveConfig();
+    }
     public String LoadTime(long startTime) {
         long elapsedTime = System.currentTimeMillis() - startTime;
         long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime);

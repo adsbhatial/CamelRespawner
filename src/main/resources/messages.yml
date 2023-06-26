@@ -1,0 +1,27 @@
+# DO NOT CHANGE VERSION
+version: 1.0.0
+no-perm: <red>You don't have permission to run this command</red>
+camelrespawner-command-header: <yellow>|====== <green>CamelRespawner</green> ======|</yellow>
+camelrespawner-docs-command:
+  <yellow> Docs are coming </yellow>
+camelrespawner-version-command: |-
+  <header>
+  Plugin version: <yellow><plugin-version></yellow>
+  Java version: <yellow><java-version></yellow>
+  Server software: <yellow><server-software></yellow>
+  Server software version: <yellow><server-version></yellow>
+#camelrespawner-version-update: <yellow>Plugin update available!
+camelrespawner-help-command: |-
+  <header>
+  <yellow><click:run_command:/camelrespawner>/camelrespawner</click></yellow> - Displays this menu
+  <yellow><click:run_command:/camelrespawner help>/camelrespawner help</click></yellow> - Displays this menu
+  <yellow><click:run_command:/camelrespawner commands>/camelrespawner commands</click></yellow> - Displays this command help page
+  <yellow><click:run_command:/camelrespawner reloadconfig>/camelrespawner reloadconfig</click></yellow> - Reloads the config
+  <yellow><click:run_command:/camelrespawner v>/camelrespawner [v|version]</click></yellow> - Displays the plugin version
+  <yellow><click:run_command:/camelrespawner viewconfig>/camelrespawner viewconfig</click></yellow> - Displays the current config values
+camelrespawner-viewconfig-command: |-
+  <header>
+  Cat to Camel Chance(0-1): <yellow><cat_to_camel_chance></yellow>
+  Check Nearby Camels: <yellow><camels_check_camels></yellow>
+  Nearby Camels Search radius: <yellow><camels_search_radius></yellow>
+  Maximum nearby camels allowed: <yellow><camels_max_camels_nearby></yellow>

@@ -174,10 +174,9 @@ public class MessageUtil {
         if (sendToConsole) recipients.add(Bukkit.getConsoleSender());
 
         for (CommandSender player : recipients) {
-            if (player == null || (player instanceof Player)) {
+            if (player == null) {
                 continue;
             }
-
             camelRespawner.adventure().sender(player).sendMessage(builtComponent);
         }
     }
