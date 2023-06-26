@@ -1,11 +1,17 @@
 package com.adsbhatial.camelrespawner;
 
 import com.adsbhatial.camelrespawner.Listeners.SpawnListeners;
+import com.adsbhatial.camelrespawner.util.LegacyColors;
+import com.adsbhatial.camelrespawner.util.MessageUtil;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.ChatColor;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -40,6 +46,7 @@ public final class CamelRespawner extends JavaPlugin {
     static String THIS_VERSION;
 
     public static boolean debug;
+    private BukkitAudiences adventure;
 
     YamlConfiguration oldconfig = new YamlConfiguration();
     String configVersion = "1.0.0";
@@ -51,15 +58,27 @@ public final class CamelRespawner extends JavaPlugin {
         System.out.println("CamelRespawner Started");
         loadConfig();
         getServer().getPluginManager().registerEvents(new SpawnListeners(this), this);
-        consoleInfo(ChatColor.BOLD + "ENABLED" + ChatColor.RESET + " - Loading took " + LoadTime(startTime));
+        this.adventure = BukkitAudiences.create(this);
+        consoleInfo("ENABLED - Loading took " + LoadTime(startTime));
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        consoleInfo(ChatColor.BOLD + "DISABLED" + ChatColor.RESET);
+
+        consoleInfo("DISABLED");
+        if(this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+        }
     }
 
+    public @NonNull BukkitAudiences adventure() {
+        if(this.adventure == null) {
+            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return this.adventure;
+    }
     public void loadConfig(){
         debug = getConfig().getBoolean("debug", false);
         oldconfig = new YamlConfiguration();
@@ -151,21 +170,62 @@ public final class CamelRespawner extends JavaPlugin {
 
 
     public  void log(String logMessage){
-        logger.info(ChatColor.YELLOW + "" + pluginName + ChatColor.RESET + " " + logMessage + ChatColor.RESET);
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.YELLOW)
+                .mmText(logMessage)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
     }
     public  void logDebug(String logMessage){
-        log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [DEBUG] " + ChatColor.RESET + logMessage);
+        //log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [DEBUG] " + ChatColor.RESET + logMessage);
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.RED)
+                .mmText("[DEBUG] " + logMessage)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
+
     }
     public void logWarn(String logMessage){
-        log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [WARNING] " + ChatColor.RESET + logMessage);
+        //log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [WARNING] " + ChatColor.RESET + logMessage);
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.RED)
+                .mmText("[WARNING] " + logMessage)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
+
     }
     public	void log(Level level, String dalog){
-        logger.log(level, ChatColor.YELLOW + "" + dalog );
+        //logger.log(level, ChatColor.YELLOW + "" + dalog );
     }
 
     public void consoleInfo(String state) {
-        logger.info(ChatColor.YELLOW + "**************************************" + ChatColor.RESET);
-        logger.info(ChatColor.GREEN + THIS_NAME + " v" + THIS_VERSION + ChatColor.RESET + " is " + state);
-        logger.info(ChatColor.YELLOW + "**************************************" + ChatColor.RESET);
+        //logger.info(ChatColor.YELLOW + "**************************************" + ChatColor.RESET);
+        //logger.info(ChatColor.GREEN + THIS_NAME + " v" + THIS_VERSION + ChatColor.RESET + " is " + state);
+        //logger.info(ChatColor.YELLOW + "**************************************" + ChatColor.RESET);
+        String logMessage = THIS_NAME + " v" + THIS_VERSION + " is " + state;
+        String pattern = StringUtils.repeat("*",logMessage.length());
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.YELLOW)
+                .mmText(pattern)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
+
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.GREEN)
+                .mmText(logMessage)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
+
+        MessageUtil.Builder(this)
+                .setConfigColor(LegacyColors.YELLOW)
+                .mmText(pattern)
+                .addPrefix(true)
+                .toConsole(true)
+                .send();
     }
 }
