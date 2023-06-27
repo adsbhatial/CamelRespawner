@@ -2,6 +2,8 @@ package com.adsbhatial.camelrespawner.Listeners;
 
 import com.adsbhatial.camelrespawner.CamelRespawner;
 import com.adsbhatial.camelrespawner.util.CamelRespawnerLib;
+import com.adsbhatial.camelrespawner.util.LegacyColors;
+import com.adsbhatial.camelrespawner.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -129,15 +131,34 @@ public class SpawnListeners implements Listener {
     }
 
     public  void log(String logMessage){
-        logger.info(ChatColor.YELLOW + "" + pluginName + ChatColor.RESET + " " + logMessage + ChatColor.RESET);
+        //logger.info(ChatColor.YELLOW + "" + pluginName + ChatColor.RESET + " " + logMessage + ChatColor.RESET);
+        MessageUtil.Builder(camelRespawner)
+                .mmText(logMessage)
+                .addPrefix(true)
+                .setConfigColor(LegacyColors.YELLOW)
+                .toConsole(true)
+                .send();
     }
     public  void logDebug(String logMessage){
-        log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [DEBUG] " + ChatColor.RESET + logMessage);
+        //log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [DEBUG] " + ChatColor.RESET + logMessage);
+        MessageUtil.Builder(camelRespawner)
+                .mmText("[DEBUG] " + logMessage)
+                .addPrefix(true)
+                .setConfigColor(LegacyColors.RED)
+                .toConsole(true)
+                .send();
     }
     public void logWarn(String logMessage){
-        log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [WARNING] " + ChatColor.RESET + logMessage);
+        //log(" " + THIS_VERSION + ChatColor.RED + ChatColor.BOLD + " [WARNING] " + ChatColor.RESET + logMessage);
+        MessageUtil.Builder(camelRespawner)
+                .mmText("[WARNING] " + logMessage)
+                .addPrefix(true)
+                .setConfigColor(LegacyColors.RED)
+                .toConsole(true)
+                .send();
+
     }
     public	void log(Level level, String logMessage){
-        logger.log(level, ChatColor.YELLOW + "" + logMessage );
+        //logger.log(level, ChatColor.YELLOW + "" + logMessage );
     }
 }
